@@ -1,3 +1,6 @@
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
 const path = require('path');
 const express = require('express');
 
@@ -6,6 +9,8 @@ const DEFAULT_NODE_RED_URL = 'http://127.0.0.1:1880/radar';
 const NODE_RED_RETRY_COOLDOWN_MS = process.env.NODE_RED_RETRY_COOLDOWN_MS
   ? Number(process.env.NODE_RED_RETRY_COOLDOWN_MS)
   : 10_000;
+const HTTPS_PORT_INPUT = process.env.HTTPS_PORT;
+const HTTPS_PORT = HTTPS_PORT_INPUT ? Number(HTTPS_PORT_INPUT) : 3443;
 const MIN_POST_INTERVAL_MS = 50;
 const POST_TIMEOUT_MS = 5_000;
 
@@ -74,19 +79,73 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Radar server listening on port ${PORT}`);
+const httpServer = http.createServer(app);
+
+httpServer.listen(PORT, () => {
+  console.log(`Radar server listening on http://0.0.0.0:${PORT}`);
+  logNodeRedStatus();
+});
+
+let httpsServer = null;
+initializeHttpsServer();
+
+process.on('SIGINT', () => {
+  clearInterval(keepAliveTimer);
+  httpServer.close(() => {
+    if (httpsServer) {
+      httpsServer.close(() => process.exit(0));
+    } else {
+      process.exit(0);
+    }
+  });
+});
+
+function initializeHttpsServer() {
+  const keyPath = process.env.HTTPS_KEY_PATH;
+  const certPath = process.env.HTTPS_CERT_PATH;
+
+  if (!keyPath || !certPath) {
+    if (process.env.HTTPS_PORT || process.env.HTTPS_KEY_PATH || process.env.HTTPS_CERT_PATH) {
+      console.warn('[HTTPS] Disabled: HTTPS_KEY_PATH and HTTPS_CERT_PATH must both be set');
+    }
+    return;
+  }
+
+  try {
+    const credentials = {
+      key: fs.readFileSync(path.resolve(keyPath)),
+      cert: fs.readFileSync(path.resolve(certPath)),
+    };
+
+    if (process.env.HTTPS_PASSPHRASE) {
+      credentials.passphrase = process.env.HTTPS_PASSPHRASE;
+    }
+
+    const httpsPort = Number.isFinite(HTTPS_PORT) ? HTTPS_PORT : 3443;
+    if (!Number.isFinite(HTTPS_PORT) && HTTPS_PORT_INPUT) {
+      console.warn(
+        `[HTTPS] Invalid HTTPS_PORT value "${HTTPS_PORT_INPUT}" – falling back to ${httpsPort}`,
+      );
+    }
+
+    httpsServer = https.createServer(credentials, app);
+    httpsServer.listen(httpsPort, () => {
+      console.log(`Radar server listening on https://0.0.0.0:${httpsPort}`);
+      logNodeRedStatus();
+    });
+  } catch (error) {
+    console.error(`[HTTPS] Failed to start HTTPS server: ${error.message}`);
+    httpsServer = null;
+  }
+}
+
+function logNodeRedStatus() {
   if (nodeRedEnabled) {
     console.log(`[Node-RED] Forwarding enabled to ${nodeRedUrl}`);
   } else {
     console.log('[Node-RED] Forwarding disabled');
   }
-});
-
-process.on('SIGINT', () => {
-  clearInterval(keepAliveTimer);
-  server.close(() => process.exit(0));
-});
+}
 
 function updateRadarState(distanceMm, angleDeg) {
   const angleRad = (angleDeg * Math.PI) / 180;
@@ -237,6 +296,12 @@ function isNumber(value) {
 module.exports = {
   app,
   updateRadarState,
+  get httpServer() {
+    return httpServer;
+  },
+  get httpsServer() {
+    return httpsServer;
+  },
   get radarState() {
     return radarState;
   },

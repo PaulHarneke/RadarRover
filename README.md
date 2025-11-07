@@ -15,6 +15,20 @@ npm start
 
 Der Server startet standardmäßig auf Port `3000`.
 
+### HTTPS aktivieren
+
+Der Server kann zusätzlich per HTTPS erreichbar gemacht werden. Dazu müssen ein Zertifikat
+und der zugehörige Schlüssel bereitgestellt werden:
+
+```bash
+export HTTPS_KEY_PATH=./certs/server.key
+export HTTPS_CERT_PATH=./certs/server.crt
+# optional: HTTPS_PASSPHRASE und HTTPS_PORT (Standard: 3443)
+npm start
+```
+
+Bei fehlenden Dateien bleibt HTTPS deaktiviert.
+
 ## Frontend
 
 - Aufruf: `http://localhost:3000/`
