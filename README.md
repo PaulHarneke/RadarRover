@@ -81,3 +81,15 @@ Antwort: `200 OK`
 ```
 
 Fehlversuche führen zu automatischen Retries nach Ablauf des Cooldowns.
+
+### Node-RED Flow-Import
+
+Der Ordner [`node-red`](node-red) enthält die exportierte Flow-Definition [`radar-flow.json`](node-red/radar-flow.json).
+So importierst du sie in dein Node-RED-Projekt:
+
+1. Öffne Node-RED und wähle rechts oben das Menü **Import** → **Clipboard**.
+2. Kopiere den Inhalt der JSON-Datei in das Eingabefeld oder wähle **Select a file** und lade die Datei direkt hoch.
+3. Bestätige mit **Import**. Der Flow heißt **Radar Ingress**.
+4. Deploye die Änderungen. Der Flow lauscht auf `POST /radar`, validiert das eingehende Payload, speichert die letzte Messung im Flow-Kontext und beantwortet die Anfrage mit einer Quittierung.
+5. Über den *link out*-Knoten **Radar snapshots broadcast** kannst du die aufbereiteten Messwerte an weitere Flows anbinden.
+
