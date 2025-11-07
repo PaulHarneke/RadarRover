@@ -9,8 +9,11 @@ const DEFAULT_NODE_RED_URL = 'http://127.0.0.1:1880/radar';
 const NODE_RED_RETRY_COOLDOWN_MS = process.env.NODE_RED_RETRY_COOLDOWN_MS
   ? Number(process.env.NODE_RED_RETRY_COOLDOWN_MS)
   : 10_000;
-const HTTPS_PORT_INPUT = process.env.HTTPS_PORT;
-const HTTPS_PORT = HTTPS_PORT_INPUT ? Number(HTTPS_PORT_INPUT) : 3443;
+
+// Feste HTTPS-Konfiguration
+const HTTPS_PORT = 443;
+const HTTPS_KEY_PATH = path.join(__dirname, 'certs', 'server.key');
+const HTTPS_CERT_PATH = path.join(__dirname, 'certs', 'server.crt');
 const MIN_POST_INTERVAL_MS = 50;
 const POST_TIMEOUT_MS = 5_000;
 
@@ -49,9 +52,6 @@ app.use(express.json());
 app.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders?.();
-  res.write('retry: 2000\n\n');
   res.write(`data: ${JSON.stringify({ type: 'state', data: radarState })}\n\n`);
   sseClients.add(res);
 
