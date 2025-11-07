@@ -1,10 +1,9 @@
-const REF_WIDTH_MM = 1210;
-const REF_HEIGHT_MM = 810;
+const RADAR_RADIUS_MM = 10_000;
+const REF_WIDTH_MM = RADAR_RADIUS_MM * 2;
+const REF_HEIGHT_MM = RADAR_RADIUS_MM * 2;
 
 const radarReference = document.querySelector('.radar-reference');
-const radarLine = document.querySelector('.radar-line');
 const radarTag = document.querySelector('.radar-tag');
-const radarAngle = document.querySelector('.radar-angle');
 const distanceLabel = document.querySelector('.distance-label');
 
 const distanceValue = document.querySelector('#distanceValue');
@@ -40,10 +39,10 @@ function applyState(state) {
 }
 
 function updateTelemetry(state) {
-  distanceValue.textContent = `${formatNumber(state.distance_mm)} mm`;
-  angleValue.textContent = `${formatNumber(state.angle_deg)}°`;
-  xValue.textContent = `${formatNumber(state.x_mm)} mm`;
-  yValue.textContent = `${formatNumber(state.y_mm)} mm`;
+  distanceValue.textContent = `${formatMeters(state.distance_mm)} m`;
+  angleValue.textContent = `${formatAngle(state.angle_deg)}°`;
+  xValue.textContent = `${formatMeters(state.x_mm)} m`;
+  yValue.textContent = `${formatMeters(state.y_mm)} m`;
   timestampValue.textContent = formatTimestamp(state.ts);
 }
 
@@ -62,28 +61,30 @@ function renderRadar(state) {
 
   const xPx = state.x_mm / mmPerPx;
   const yPx = state.y_mm / mmPerPx;
-  const distancePx = state.distance_mm / mmPerPx;
-  const rotationDeg = -state.angle_deg;
-
-  radarLine.style.width = `${Math.max(distancePx, 0)}px`;
-  radarLine.style.transform = `translate(-50%, -50%) rotate(${rotationDeg}deg)`;
-
-  radarAngle.style.transform = `translate(-50%, -50%) rotate(${rotationDeg}deg)`;
-
   radarTag.style.transform = `translate(-50%, -50%) translate(${xPx}px, ${-yPx}px)`;
 
   distanceLabel.style.transform = `translate(-50%, -50%) translate(${xPx / 2}px, ${-yPx / 2}px)`;
-  distanceLabel.textContent = `${formatNumber(state.distance_mm)} mm`;
+  distanceLabel.textContent = `${formatMeters(state.distance_mm)} m`;
   distanceLabel.style.opacity = state.distance_mm > 0 ? '1' : '0.6';
 }
 
-function formatNumber(value) {
+function formatAngle(value) {
   const num = Number.parseFloat(value);
   if (Number.isNaN(num)) {
     return '0';
   }
   const rounded = Number(num.toFixed(0));
   return Object.is(rounded, -0) ? '0' : rounded.toString();
+}
+
+function formatMeters(valueMm) {
+  const num = Number.parseFloat(valueMm);
+  if (Number.isNaN(num)) {
+    return '0.00';
+  }
+  const meters = num / 1000;
+  const fixed = meters.toFixed(2);
+  return fixed === '-0.00' ? '0.00' : fixed;
 }
 
 function formatTimestamp(ts) {
