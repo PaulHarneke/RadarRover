@@ -1,0 +1,111 @@
+[
+  {
+    "id": "bf1f944d9af0e0ea",
+    "type": "tab",
+    "label": "Radar Ingress",
+    "disabled": false,
+    "info": "Flow that ingests radar telemetry snapshots posted by the RadarRover UI server and keeps the latest values in flow context."
+  },
+  {
+    "id": "9e5132ce4d03b4ab",
+    "type": "http in",
+    "z": "bf1f944d9af0e0ea",
+    "name": "Radar snapshot ingress",
+    "url": "/radar",
+    "method": "post",
+    "upload": false,
+    "swaggerDoc": "",
+    "x": 150,
+    "y": 120,
+    "wires": [["0d66e5cc0d9c7b2f"]]
+  },
+  {
+    "id": "0d66e5cc0d9c7b2f",
+    "type": "json",
+    "z": "bf1f944d9af0e0ea",
+    "name": "Parse JSON",
+    "property": "payload",
+    "action": "obj",
+    "pretty": false,
+    "x": 360,
+    "y": 120,
+    "wires": [["6f5d89f6f38c21aa"]]
+  },
+  {
+    "id": "6f5d89f6f38c21aa",
+    "type": "function",
+    "z": "bf1f944d9af0e0ea",
+    "name": "Validate & enrich snapshot",
+    "func": "const errors = [];\nconst payload = msg.payload;\n\nif (!payload || typeof payload !== 'object' || Array.isArray(payload)) {\n  errors.push('Payload must be a JSON object.');\n}\n\nconst numericFields = ['distance_mm', 'angle_deg', 'x_mm', 'y_mm'];\nif (!errors.length) {\n  for (const field of numericFields) {\n    if (!Object.prototype.hasOwnProperty.call(payload, field)) {\n      errors.push(`Missing required field \"${field}\".`);\n      continue;\n    }\n    const value = Number(payload[field]);\n    if (!Number.isFinite(value)) {\n      errors.push(`Field \"${field}\" must be a finite number.`);\n    }\n  }\n}\n\nlet timestamp = payload?.ts;\nif (timestamp && typeof timestamp === 'string') {\n  const parsed = Date.parse(timestamp);\n  if (Number.isNaN(parsed)) {\n    errors.push('ts must be an ISO-8601 timestamp string.');\n  }\n} else if (!timestamp) {\n  timestamp = new Date().toISOString();\n}\n\nif (errors.length) {\n  return [null, {\n    statusCode: 400,\n    payload: {\n      status: 'error',\n      message: 'Validation failed',\n      details: errors,\n    },\n  }];\n}\n\nconst sanitized = {\n  distance_mm: Number(payload.distance_mm),\n  angle_deg: Number(payload.angle_deg),\n  x_mm: Number(payload.x_mm),\n  y_mm: Number(payload.y_mm),\n  ts: timestamp,\n  source: typeof payload.source === 'string' && payload.source.trim() ? payload.source : 'radar-ui',\n};\n\nconst storedAt = new Date().toISOString();\nmsg.payload = sanitized;\nmsg.radar = sanitized;\n\nconst response = {\n  statusCode: 200,\n  payload: {\n    status: 'ok',\n    received_at: sanitized.ts,\n    stored_at: storedAt,\n    snapshot: sanitized,\n  },\n};\n\nreturn [msg, response];",
+    "outputs": 2,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 120,
+    "wires": [["096cddfb9b9f7c4c", "f629d05a82613d57"], ["5146f7c3c7f8f7fb"]]
+  },
+  {
+    "id": "096cddfb9b9f7c4c",
+    "type": "change",
+    "z": "bf1f944d9af0e0ea",
+    "name": "Store latest snapshot",
+    "rules": [
+      {
+        "t": "set",
+        "p": "radar.latest",
+        "pt": "flow",
+        "to": "payload",
+        "tot": "msg"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 900,
+    "y": 80,
+    "wires": [["75186fe60d2d7cf4", "f629d05a82613d57"]]
+  },
+  {
+    "id": "75186fe60d2d7cf4",
+    "type": "debug",
+    "z": "bf1f944d9af0e0ea",
+    "name": "Latest radar snapshot",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1180,
+    "y": 60,
+    "wires": []
+  },
+  {
+    "id": "f629d05a82613d57",
+    "type": "link out",
+    "z": "bf1f944d9af0e0ea",
+    "name": "Radar snapshots broadcast",
+    "mode": "link",
+    "links": [],
+    "x": 1180,
+    "y": 120,
+    "wires": []
+  },
+  {
+    "id": "5146f7c3c7f8f7fb",
+    "type": "http response",
+    "z": "bf1f944d9af0e0ea",
+    "name": "HTTP 200 / error",
+    "statusCode": "",
+    "headers": {},
+    "x": 930,
+    "y": 180,
+    "wires": []
+  }
+]
