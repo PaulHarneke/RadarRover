@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Radar Rover Interface</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="header-glass">
+          <h1 class="headline">Radar Rover</h1>
+          <p class="tagline">Live Tracking Interface</p>
+        </div>
+      </header>
+      <main class="app-main">
+        <section class="radar-panel">
+          <div class="radar-surface">
+            <div class="radar-reference" aria-label="Radar referenzfläche">
+              <div class="radar-grid"></div>
+              <div class="radar-center" aria-hidden="true"></div>
+              <div class="radar-line" aria-hidden="true"></div>
+              <div class="distance-label" aria-hidden="true">0 mm</div>
+              <div class="radar-angle" aria-hidden="true">
+                <span class="angle-tip" aria-hidden="true"></span>
+              </div>
+              <div class="radar-tag" role="presentation" aria-label="Tag Position"></div>
+            </div>
+          </div>
+          <section class="telemetry">
+            <div class="telemetry-card">
+              <h2 class="telemetry-title">Live Telemetrie</h2>
+              <div class="telemetry-grid">
+                <div class="telemetry-item">
+                  <span class="label">Distanz</span>
+                  <span class="value" id="distanceValue">0 mm</span>
+                </div>
+                <div class="telemetry-item">
+                  <span class="label">Winkel</span>
+                  <span class="value" id="angleValue">0°</span>
+                </div>
+                <div class="telemetry-item">
+                  <span class="label">X</span>
+                  <span class="value" id="xValue">0 mm</span>
+                </div>
+                <div class="telemetry-item">
+                  <span class="label">Y</span>
+                  <span class="value" id="yValue">0 mm</span>
+                </div>
+                <div class="telemetry-item full">
+                  <span class="label">Zeitstempel</span>
+                  <span class="value" id="timestampValue">—</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
