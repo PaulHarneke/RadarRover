@@ -91,7 +91,7 @@ body {
 .radar-reference {
   position: relative;
   width: 100%;
-  aspect-ratio: 1210 / 810;
+  aspect-ratio: 1 / 1;
   max-width: 420px;
   background: linear-gradient(180deg, rgba(12, 28, 36, 0.85), rgba(10, 20, 28, 0.55));
   border-radius: var(--radius-lg);
@@ -133,17 +133,6 @@ body {
   box-shadow: 0 0 18px rgba(0, 184, 148, 0.65);
 }
 
-.radar-line {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  height: 2px;
-  transform-origin: 0 50%;
-  background: linear-gradient(90deg, rgba(0, 184, 148, 0.75), rgba(0, 184, 148, 0));
-  pointer-events: none;
-  transition: transform var(--transition-snappy), width var(--transition-snappy);
-}
-
 .distance-label {
   position: absolute;
   top: 50%;
@@ -160,44 +149,6 @@ body {
   transform: translate(-50%, -50%);
   transition: transform var(--transition-snappy), opacity var(--transition-snappy);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
-}
-
-.radar-angle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  transform-origin: center;
-  background: radial-gradient(circle at center, rgba(0, 184, 148, 0.18), transparent 60%);
-  transform: translate(-50%, -50%) rotate(0deg);
-  transition: transform var(--transition-snappy);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.angle-tip {
-  width: 70px;
-  height: 2px;
-  background: var(--accent-strong);
-  border-radius: 4px;
-  position: relative;
-}
-
-.angle-tip::after {
-  content: '';
-  position: absolute;
-  right: -10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 10px;
-  height: 10px;
-  border-radius: 12px 0 0 12px;
-  background: var(--accent-strong);
-  box-shadow: 0 0 12px rgba(0, 184, 148, 0.6);
 }
 
 .radar-tag {
@@ -278,7 +229,4 @@ body {
     gap: 14px 18px;
   }
 
-  .angle-tip {
-    width: 56px;
-  }
 }
