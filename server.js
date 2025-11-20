@@ -11,7 +11,7 @@ const NODE_RED_RETRY_COOLDOWN_MS = process.env.NODE_RED_RETRY_COOLDOWN_MS
   : 10_000;
 
 // Feste HTTPS-Konfiguration
-const HTTPS_PORT = 443;
+const HTTPS_PORT = 3443;
 const HTTPS_KEY_PATH = path.join(__dirname, 'certs', 'server.key');
 const HTTPS_CERT_PATH = path.join(__dirname, 'certs', 'server.crt');
 const MIN_POST_INTERVAL_MS = 50;
@@ -101,12 +101,12 @@ process.on('SIGINT', () => {
 });
 
 function initializeHttpsServer() {
-  const keyPath = process.env.HTTPS_KEY_PATH;
-  const certPath = process.env.HTTPS_CERT_PATH;
+  const keyPath = process.env.HTTPS_KEY_PATH || HTTPS_KEY_PATH;
+  const certPath = process.env.HTTPS_CERT_PATH || HTTPS_CERT_PATH;
 
-  if (!keyPath || !certPath) {
+  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
     if (process.env.HTTPS_PORT || process.env.HTTPS_KEY_PATH || process.env.HTTPS_CERT_PATH) {
-      console.warn('[HTTPS] Disabled: HTTPS_KEY_PATH and HTTPS_CERT_PATH must both be set');
+      console.warn(`[HTTPS] Disabled: Certificates not found at ${keyPath} or ${certPath}`);
     }
     return;
   }
