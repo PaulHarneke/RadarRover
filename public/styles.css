@@ -233,6 +233,19 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.telemetry-title {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(241, 245, 249, 0.8);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 420px) {
   .app__header {
     padding-inline: 1rem;
