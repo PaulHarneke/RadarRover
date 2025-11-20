@@ -149,8 +149,8 @@ function logNodeRedStatus() {
 
 function updateRadarState(distanceMm, angleDeg) {
   const angleRad = (angleDeg * Math.PI) / 180;
-  const x = Number((distanceMm * Math.cos(angleRad)).toFixed(3));
-  const y = Number((distanceMm * Math.sin(angleRad)).toFixed(3));
+  const x = Number((distanceMm * Math.sin(angleRad)).toFixed(3));
+  const y = Number((distanceMm * Math.cos(angleRad)).toFixed(3));
   radarState = {
     distance_mm: Number(distanceMm.toFixed(3)),
     angle_deg: Number(angleDeg.toFixed(3)),
